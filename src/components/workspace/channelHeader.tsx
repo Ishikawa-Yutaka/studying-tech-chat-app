@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 // 自作コンポーネント
-import InviteMemberModal from './inviteMemberModal';
+import InviteMemberModal from '@/components/channel/inviteMemberModal';
 // 型
 import { ChannelType, type Channel } from '@/types/workspace';
 // データ

@@ -1,3 +1,7 @@
+'use client';
+
+// React
+import { useState } from 'react';
 // Next.js
 import Link from 'next/link';
 // アイコン
@@ -5,12 +9,18 @@ import { Hash, MessageSquare, Users } from 'lucide-react';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// 自作コンポーネント
+import CreateChannelModal from '@/components/workspace/createChannelModal';
+import CreateDirectMessageModal from '@/components/workspace/createDirectMessageModal';
 // 型
 import { ChannelType } from '@/types/workspace';
 // データ
 import { MY_USER_ID, users, channels, messages, getDirectMessagePartner } from '@/data/workspace';
 
 export default function WorkSpacePage() {
+  const [isChannelModalOpen, setIsChannelModalOpen] = useState<boolean>(false);
+  const [isDmModalOpen, setIsDmModalOpen] = useState<boolean>(false);
+
   const channelsWithMe = channels.filter((channel) => channel.members.some((member) => member.id === MY_USER_ID));
   const normalChannels = channelsWithMe.filter((channel) => channel.channelType === ChannelType.CHANNEL);
   const directMessages = channelsWithMe.filter((channel) => channel.channelType === ChannelType.DM);
@@ -21,16 +31,19 @@ export default function WorkSpacePage() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">ダッシュボード</h2>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setIsDmModalOpen(true)}>
             <Users className="mr-2 h-4 w-4" />
             新規 DM
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setIsChannelModalOpen(true)}>
             <MessageSquare className="mr-2 h-4 w-4" />
             新規チャンネル
           </Button>
         </div>
       </div>
+
+      <CreateChannelModal isOpen={isChannelModalOpen} onOpenChange={setIsChannelModalOpen} />
+      <CreateDirectMessageModal isOpen={isDmModalOpen} onOpenChange={setIsDmModalOpen} />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>

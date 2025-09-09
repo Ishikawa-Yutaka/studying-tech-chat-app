@@ -6,13 +6,19 @@ import { ChannelType, type Channel, type User, type Message } from '@/types/work
 export const MY_USER_ID = 1;
 
 // サンプルユーザーデータ
+
 export const users: User[] = [
   { id: MY_USER_ID, name: '自分', email: 'me@example.com' },
   { id: 2, name: '田中 一郎', email: 'tanaka@example.com' },
   { id: 3, name: '佐藤 次郎', email: 'sato@example.com' },
   { id: 4, name: '鈴木 三郎', email: 'suzuki@example.com' },
+  { id: 5, name: '山田 四郎', email: 'yamada@example.com' },
+  { id: 6, name: '小林 五郎', email: 'kobayashi@example.com' },
+  { id: 7, name: '松本 六郎', email: 'matsumoto@example.com' },
+  { id: 8, name: '渡辺 七郎', email: 'watanabe@example.com' },
+  { id: 9, name: '中村 八郎', email: 'nakamura@example.com' },
+  { id: 10, name: '高橋 九郎', email: 'takahashi@example.com' },
 ];
-
 /**
  * ID を指定してユーザーを取得する
  */
