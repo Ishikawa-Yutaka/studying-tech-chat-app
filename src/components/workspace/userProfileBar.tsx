@@ -4,18 +4,18 @@ import { LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 // 型
-import type { MyProfile } from '@/types/workspace';
+import type { User } from '@/types/workspace';
 
-export default function UserProfileBar({ myProfile }: { myProfile: MyProfile }) {
+export default function UserProfileBar({ user }: { user: User }) {
   return (
     <div className="flex items-center gap-2">
       <Avatar>
-        <AvatarFallback>{myProfile.name.charAt(0)}</AvatarFallback>
+        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
       </Avatar>
 
       <div className="flex-1 overflow-hidden">
-        <p className="text-sm font-medium leading-none">{myProfile.name}</p>
-        <p className="text-xs text-muted-foreground">{myProfile.email}</p>
+        <p className="text-sm font-medium leading-none">{user.name}</p>
+        <p className="text-xs text-muted-foreground">{user.email}</p>
       </div>
 
       <Button variant="ghost" size="icon">

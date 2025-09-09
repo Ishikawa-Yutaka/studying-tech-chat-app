@@ -15,12 +15,18 @@ import AppLogo from '@/components/workspace/appLogo';
 import ChannelList from '@/components/workspace/channelList';
 import DirectMessageList from '@/components/workspace/directMessageList';
 import UserProfileBar from '@/components/workspace/userProfileBar';
+// 型
+import { ChannelType } from '@/types/workspace';
 // データ
-import { channels, directMessages, myProfile } from '@/data/workspace';
+import { MY_USER_ID, channels, getUser } from '@/data/workspace';
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<boolean>(false);
+
+  const channelsWithMe = channels.filter((channel) => channel.members.some((member) => member.id === MY_USER_ID));
+  const normalChannels = channelsWithMe.filter((channel) => channel.channelType === ChannelType.CHANNEL);
+  const directMessages = channelsWithMe.filter((channel) => channel.channelType === ChannelType.DM);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -40,14 +46,14 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             <Separator />
             <div className="flex-1">
               <div className="px-2 py-2">
-                <ChannelList channels={channels} pathname={pathname} />
+                <ChannelList channels={normalChannels} pathname={pathname} />
                 <Separator className="my-2" />
-                <DirectMessageList directMessages={directMessages} pathname={pathname} />
+                <DirectMessageList channels={directMessages} pathname={pathname} />
               </div>
             </div>
             <Separator />
             <div className="p-4">
-              <UserProfileBar myProfile={myProfile} />
+              <UserProfileBar user={getUser(MY_USER_ID)} />
             </div>
           </SheetContent>
         </Sheet>
@@ -62,12 +68,12 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             <AppLogo />
           </div>
           <div className="px-2 flex-1">
-            <ChannelList channels={channels} pathname={pathname} />
+            <ChannelList channels={normalChannels} pathname={pathname} />
             <Separator className="my-2" />
-            <DirectMessageList directMessages={directMessages} pathname={pathname} />
+            <DirectMessageList channels={directMessages} pathname={pathname} />
           </div>
           <div className="sticky bottom-0 border-t bg-background p-4">
-            <UserProfileBar myProfile={myProfile} />
+            <UserProfileBar user={getUser(MY_USER_ID)} />
           </div>
         </aside>
 
