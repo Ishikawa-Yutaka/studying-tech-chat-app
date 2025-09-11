@@ -1,7 +1,7 @@
 'use client';
 
 // React
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 // Next.js
 import { useParams, notFound } from 'next/navigation';
 // 自作コンポーネント
@@ -9,18 +9,20 @@ import ChannelHeader from '@/components/channel/channelHeader';
 import MessageView from '@/components/channel/messageView';
 import MessageForm from '@/components/channel/messageForm';
 // データ
-import { getChannel, getChannelMessages, getDirectMessagePartner, getUser, MY_USER_ID } from '@/data/workspace';
+import { getChannel, getDirectMessagePartner, getUser, MY_USER_ID } from '@/data/workspace';
 // 型
 import { ChannelType, Message, Channel } from '@/types/workspace';
+// Zustand ストア
+import { useMessageStore } from '@/store/useMessageStore';
 
 export default function ChannelPage() {
-  // React Hooks は常に同じ順序で呼び出される必要があり、条件分岐やアーリーリターンの後で呼び出すことはできません
-  const [messages, setMessages] = useState<Message[]>([]);
-
   // URL のパスからチャンネル ID を取得
   const { channelId } = useParams<{ channelId: string }>();
   const channelIdNumber = parseInt(channelId, 10);
   let channel: Channel | null = null;
+
+  // Zustand ストアからメッセージとアクションを取得
+  const { messages, fetchMessages, addMessage } = useMessageStore();
 
   // getChannel はチャンネルが見つからなかった場合に error を throw する。
   // そのため、エラーが起こっても処理を止めないように try-catch で囲む
@@ -31,16 +33,15 @@ export default function ChannelPage() {
   }
 
   useEffect(() => {
-    // setMessages は、コンポーネントのレンダリングの度に実行されるので、無限ループにならないように、 useEffect 内で実行する
-    // useEffect の依存配列に channelIdNumber を含めることで、チャンネル ID が変更された時にのみ実行する
-    setMessages(getChannelMessages(channelIdNumber));
-  }, [channelIdNumber]);
+    // チャンネル ID が変更されたときにメッセージを取得
+    fetchMessages(channelIdNumber);
+  }, [channelIdNumber, fetchMessages]);
 
   if (!channel) return notFound();
 
   const channelDisplayName =
     channel.channelType === ChannelType.CHANNEL
-      ? `#${channel.name}`
+      ? `# ${channel.name}`
       : getDirectMessagePartner(channel, MY_USER_ID).name;
 
   const handleSendMessage = (content: string) => {
@@ -52,15 +53,13 @@ export default function ChannelPage() {
       createdAt: new Date(),
     };
 
-    // push で追加せず、スプレッド演算子で配列を展開する形で新しいメッセージを追加する
-    // これは、 React の state が immutable (不変) であるため
-    setMessages([...messages, newMessage]);
+    // Zustand ストアにメッセージを追加
+    addMessage(newMessage);
   };
 
   return (
     <div className="flex flex-col h-full">
       <ChannelHeader channel={channel} />
-      {/* メッセージの内容が useState で管理されているので、それを渡す */}
       <MessageView messages={messages} myUserId={MY_USER_ID} />
       <MessageForm channelDisplayName={channelDisplayName} handleSendMessage={handleSendMessage} />
     </div>

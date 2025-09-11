@@ -2,15 +2,17 @@
 
 // React
 import { useState } from 'react';
+// テーマ
+import { useTheme } from 'next-themes';
 // アイコン
 import { LogOut, Settings } from 'lucide-react';
 // shadcn/ui
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +31,12 @@ export default function UserProfileBar({ user }: { user: User }) {
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [logoutOpen, setLogoutOpen] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>(user.name);
+  const { theme, setTheme } = useTheme();
+
+  // ダークモードの切り替え
+  const toggleDarkMode = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -65,7 +73,7 @@ export default function UserProfileBar({ user }: { user: User }) {
               />
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="darkmode" />
+              <Switch id="darkmode" checked={theme === 'dark'} onCheckedChange={toggleDarkMode} />
               <Label htmlFor="darkmode">ダークモードを有効にする</Label>
             </div>
           </div>
