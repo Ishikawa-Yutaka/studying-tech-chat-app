@@ -26,6 +26,8 @@ import {
 } from '@/components/ui/alert-dialog';
 // 型
 import type { User } from '@/types/workspace';
+// サーバーアクション
+import { logout } from '@/app/logout/actions';
 
 export default function UserProfileBar({ user }: { user: User }) {
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
@@ -36,6 +38,15 @@ export default function UserProfileBar({ user }: { user: User }) {
   // ダークモードの切り替え
   const toggleDarkMode = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  // ログアウト処理
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('ログアウトエラー:', error);
+    }
   };
 
   return (
@@ -99,7 +110,7 @@ export default function UserProfileBar({ user }: { user: User }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction>ログアウト</AlertDialogAction>
+            <AlertDialogAction onClick={handleLogout}>ログアウト</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

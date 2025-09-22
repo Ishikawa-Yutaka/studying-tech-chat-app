@@ -1,29 +1,76 @@
 'use client';
 
 // React
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // Next.js
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+// Zod, React Hook Form (バリデーション)
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+// サーバーアクション
+import { signup } from '@/app/signup/actions';
+
+// バリデーションスキーマ
+const formSchema = z.object({
+  name: z.string().min(1, { message: '名前は必須です' }),
+  email: z.string().email({ message: '有効なメールアドレスを入力してください' }),
+  password: z.string().min(6, { message: 'パスワードは 6 文字以上必要です' }),
+});
 
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  // TODO: ここにフォームの値の useState や バリデーションロジックを実装
+  // URL パラメータからエラーメッセージを取得
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get('error');
+    if (errorParam) {
+      setError(errorParam);
+      // URLからエラーパラメータを削除
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // フォームの設定
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { name: '', email: '', password: '' },
+  });
+
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+    setError(null);
 
-    // TODO: ここに登録ロジックを実装
+    console.log('クライアント側: handleSubmit開始', values);
 
-    setTimeout(() => {
+    try {
+      // FormData オブジェクトを作成
+      const formData = new FormData();
+      formData.append('name', values.name);
+      formData.append('email', values.email);
+      formData.append('password', values.password);
+
+      console.log('クライアント側: FormData作成完了');
+
+      // サーバーアクションを呼び出し（サーバー側でリダイレクトされるため、ここでのリダイレクトは不要）
+      console.log('クライアント側: signup関数呼び出し開始');
+      await signup(formData);
+      console.log('クライアント側: signup関数呼び出し完了');
+    } catch (err) {
+      console.error('クライアント側登録エラー:', err);
+      setError('アカウント登録中にエラーが発生しました。もう一度お試しください。');
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -40,48 +87,74 @@ export default function SignupPage() {
           <CardHeader>
             <CardTitle>新規登録</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center"></div>
-            </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-4">
-                <div className="grid gap-1">
-                  <Label htmlFor="name">名前</Label>
-                  <Input
-                    id="name"
-                    placeholder="山田 太郎"
-                    type="text"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="grid gap-1">
-                  <Label htmlFor="email">メールアドレス</Label>
-                  <Input
-                    id="email"
-                    placeholder="name@example.com"
-                    type="email"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    autoCorrect="off"
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="grid gap-1">
-                  <Label htmlFor="password">パスワード</Label>
-                  <Input
-                    id="password"
-                    placeholder="パスワード"
-                    type="password"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    disabled={isLoading}
-                  />
-                </div>
-                <Button disabled={isLoading}>
+          <CardContent className="grid gap-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>名前</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="山田 太郎"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>メールアドレス</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="name@example.com"
+                          type="email"
+                          autoCapitalize="none"
+                          autoComplete="email"
+                          autoCorrect="off"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>パスワード</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="パスワード"
+                          type="password"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {error && <div className="text-sm font-medium text-destructive">{error}</div>}
+
+                <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && (
                     <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
                       <circle
@@ -101,11 +174,12 @@ export default function SignupPage() {
                   )}
                   アカウント作成
                 </Button>
-              </div>
-            </form>
+              </form>
+            </Form>
           </CardContent>
+
           <CardFooter>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-muted-foreground w-full">
               アカウントをお持ちの場合は{' '}
               <Link href="/login" className="underline underline-offset-4 hover:text-primary">
                 ログイン
