@@ -14,14 +14,13 @@ export enum ChannelType {
 }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
 }
 
-// DM の場合は name と description なし
 export interface Channel {
-  id: number;
+  id: string;
   name?: string;
   description?: string;
   channelType: ChannelType;
@@ -29,7 +28,7 @@ export interface Channel {
 }
 
 export interface Message {
-  id: number;
+  id: string;
   channel: Channel;
   sender: User;
   content: string;

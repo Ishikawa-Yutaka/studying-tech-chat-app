@@ -9,24 +9,16 @@ export const userOperations = {
     return prisma.user.create({ data: { authId, email, name } });
   },
 
-  // すべてのユーザーを取得
-  async getAllUsers() {
-    return prisma.user.findMany();
+  // 自分以外の全てのユーザーを取得 （セキュリティのために、メールアドレスは含めず id, name のみ取得する）
+  async getAllUsersWithoutMe(userId: string) {
+    return prisma.user.findMany({
+      select: { id: true, name: true },
+      where: { id: { not: userId } },
+    });
   },
 
   // 認証 ID からユーザーを取得
   async getUserByAuthId(authId: string) {
     return prisma.user.findUnique({ where: { authId } });
-  },
-
-  // 自分以外の全てのユーザーを取得
-  async getAllUsersWithoutMe(excludeUserId: string) {
-    return prisma.user.findMany({
-      where: {
-        id: {
-          not: excludeUserId
-        }
-      }
-    });
   },
 };
