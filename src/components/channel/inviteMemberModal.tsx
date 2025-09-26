@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
-// データ
-import { MY_USER_ID, users } from '@/data/workspace';
+// ストア
+import { useUserStore } from '@/store/useUserStore';
 // 型
 import type { User, Channel } from '@/types/workspace';
 
@@ -27,9 +27,11 @@ export default function InviteMemberModal({ isOpen, onOpenChange, channel }: Inv
   // 選択中のユーザーは、チェックボックスで複数選択できるようにする
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
+  const { user: currentUser, otherUsers } = useUserStore();
+
   // 自分以外のユーザーで、まだチャンネルに参加していないユーザーを取得
-  const availableUsers = users.filter(
-    (user) => user.id !== MY_USER_ID && !channel.members.some((member) => member.id === user.id)
+  const availableUsers = otherUsers.filter(
+    (user) => user.id !== currentUser?.id && !channel.members.some((member) => member.id === user.id)
   );
 
   // 検索クエリに基づいてユーザーをフィルタリング

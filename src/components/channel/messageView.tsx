@@ -2,7 +2,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Message } from '@/types/workspace';
 
-export default function MessageView({ messages, myUserId }: { messages: Message[]; myUserId: number }) {
+export default function MessageView({ messages, myUserId }: { messages: Message[]; myUserId: string | undefined }) {
   // アロー関数で、メッセージが自分のものかどうかを判断する処理を定義
   const isMyMessage = (message: Message) => message.sender.id === myUserId;
 

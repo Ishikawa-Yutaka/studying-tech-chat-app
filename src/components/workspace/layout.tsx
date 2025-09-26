@@ -19,8 +19,7 @@ import Loading from '@/app/loading';
 import Error from '@/app/error';
 // 型
 import { ChannelType } from '@/types/workspace';
-// データ
-import { channels } from '@/data/workspace';
+// 削除: データはストアから取得
 // ストア
 import { useUserStore } from '@/store/useUserStore';
 

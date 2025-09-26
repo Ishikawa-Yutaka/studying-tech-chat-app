@@ -13,12 +13,15 @@ import InviteMemberModal from '@/components/channel/inviteMemberModal';
 // 型
 import { ChannelType, type Channel } from '@/types/workspace';
 // データ
-import { getDirectMessagePartner, MY_USER_ID } from '@/data/workspace';
+import { getDirectMessagePartner } from '@/lib/db';
+// ストア
+import { useUserStore } from '@/store/useUserStore';
 
 export default function ChannelHeader({ channel }: { channel: Channel }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false);
+  const { user } = useUserStore();
 
-  const partner = channel.channelType === ChannelType.DM ? getDirectMessagePartner(channel, MY_USER_ID) : null;
+  const partner = channel.channelType === ChannelType.DM && user ? getDirectMessagePartner(channel, user.id) : null;
 
   return (
     <header className="border-b bg-background z-10">

@@ -16,7 +16,7 @@ export enum ChannelType {
 export interface User {
   id: string;
   name: string;
-  email: string;
+  email?: string;
 }
 
 export interface Channel {
@@ -29,7 +29,7 @@ export interface Channel {
 
 export interface Message {
   id: string;
-  channel: Channel;
+  channelId: string;
   sender: User;
   content: string;
   createdAt: Date;

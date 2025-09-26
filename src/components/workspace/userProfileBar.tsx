@@ -38,7 +38,9 @@ export default function UserProfileBar({ user }: { user: User }) {
   const [logoutOpen, setLogoutOpen] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>(user.name);
   const { theme, setTheme } = useTheme();
-  const { clearUser } = useUserStore();
+  const { clearUser, clearOtherUsers } = useUserStore();
+  const { clearChannels } = useChannelStore();
+  const { clearMessages } = useMessageStore();
 
   // ダークモードの切り替え
   const toggleDarkMode = () => {
@@ -50,6 +52,9 @@ export default function UserProfileBar({ user }: { user: User }) {
     try {
       // クライアント側のストア状態をクリア
       clearUser();
+      clearOtherUsers();
+      clearChannels();
+      clearMessages();
       // サーバー側でのログアウト処理
       await logout();
     } catch (error) {

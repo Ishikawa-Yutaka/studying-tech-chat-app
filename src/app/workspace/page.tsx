@@ -1,7 +1,7 @@
 'use client';
 
 // React
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // Next.js
 import Link from 'next/link';
 // アイコン
@@ -13,17 +13,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import CreateChannelModal from '@/components/workspace/createChannelModal';
 import CreateDirectMessageModal from '@/components/workspace/createDirectMessageModal';
 // 型
-import { ChannelType } from '@/types/workspace';
+import { ChannelType, Message } from '@/types/workspace';
 // データ
-import { MY_USER_ID, users, channels, messages, getDirectMessagePartner } from '@/data/workspace';
+import { getDirectMessagePartner } from '@/lib/db';
+// ストア
+import { useChannelStore } from '@/store/useChannelStore';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function WorkSpacePage() {
   const [isChannelModalOpen, setIsChannelModalOpen] = useState<boolean>(false);
   const [isDmModalOpen, setIsDmModalOpen] = useState<boolean>(false);
+  // 自分のメッセージ (このページでしか使わないので、ストアには保存せず useState, useEffect で管理する)
+  const [myMessages, setMyMessages] = useState<Message[] | null>(null);
 
-  const channelsWithMe = channels.filter((channel) => channel.members.some((member) => member.id === MY_USER_ID));
-  const normalChannels = channelsWithMe.filter((channel) => channel.channelType === ChannelType.CHANNEL);
-  const directMessages = channelsWithMe.filter((channel) => channel.channelType === ChannelType.DM);
+  // ストアからデータを取得
+  const { user, otherUsers } = useUserStore();
+  const { channels } = useChannelStore();
+
+  // チャンネル一覧から、チャンネルと DM を分ける
+  const normalChannels = channels.filter((channel) => channel.channelType === ChannelType.CHANNEL);
+  const directMessages = channels.filter((channel) => channel.channelType === ChannelType.DM);
+
+  useEffect(() => {
+    const initMyMessages = async () => {
+      if (!user) return;
+
+      const res = await fetch('/api/messages/me');
+      const messagesData = await res.json();
+      setMyMessages(messagesData);
+    };
+
+    initMyMessages();
+  }, [user]);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -52,7 +73,7 @@ export default function WorkSpacePage() {
             <Hash className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{channelsWithMe.length}</div>
+            <div className="text-2xl font-bold">{channels.length}</div>
             <p className="text-xs text-muted-foreground">参加しているチャンネル・DM 数</p>
           </CardContent>
         </Card>
@@ -63,9 +84,7 @@ export default function WorkSpacePage() {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {messages.filter((message) => message.sender.id === MY_USER_ID).length}
-            </div>
+            <div className="text-2xl font-bold">{myMessages?.length}</div>
             <p className="text-xs text-muted-foreground">自分が投稿したメッセージ数</p>
           </CardContent>
         </Card>
@@ -76,7 +95,8 @@ export default function WorkSpacePage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+            {/* 自分を含めたメンバー数 (+1 は自分) */}
+            <div className="text-2xl font-bold">{otherUsers.length + 1}</div>
             <p className="text-xs text-muted-foreground">ワークスペース全体のメンバー数</p>
           </CardContent>
         </Card>
@@ -118,13 +138,13 @@ export default function WorkSpacePage() {
                 <div key={dm.id} className="flex items-center">
                   <div className="mr-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
                     <span className="font-medium text-primary">
-                      {getDirectMessagePartner(dm, MY_USER_ID).name.charAt(0)}
+                      {user && getDirectMessagePartner(dm, user.id).name.charAt(0)}
                     </span>
                   </div>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center justify-between">
                       <Link href={`/workspace/channel/${dm.id}`} className="font-medium hover:underline">
-                        {getDirectMessagePartner(dm, MY_USER_ID).name}
+                        {user && getDirectMessagePartner(dm, user.id).name}
                       </Link>
                     </div>
                   </div>

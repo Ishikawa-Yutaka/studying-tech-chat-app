@@ -2,6 +2,8 @@
 
 // React
 import { useState } from 'react';
+// Next.js
+import { useRouter } from 'next/navigation';
 // アイコン
 import { Check, Search } from 'lucide-react';
 // shadcn/ui
@@ -10,8 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-// データ
-import { MY_USER_ID, users } from '@/data/workspace';
+// ストア
+import { useUserStore } from '@/store/useUserStore';
+import { useChannelStore } from '@/store/useChannelStore';
 // 型
 import type { User } from '@/types/workspace';
 
@@ -26,20 +29,46 @@ export default function CreateDirectMessageModal({
   const [searchQuery, setSearchQuery] = useState<string>('');
   // 選択中のユーザー
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  // ロード状態とエラー状態
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
+  const router = useRouter();
   // 自分以外のユーザーを取得 (TODO: 実際には、まだ DM を開始していないユーザーに絞り込む)
-  const otherUsers = users.filter((user) => user.id !== MY_USER_ID);
+  const { otherUsers } = useUserStore();
+  const { createDirectMessage } = useChannelStore();
 
   // 検索クエリに基づいてユーザーをフィルタリング
   const filteredUsers = otherUsers.filter(
     (user) => searchQuery === '' || user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleStartDm = () => {
-    // 今は見た目だけの実装なので、実際の DM 開始処理は行わない
-    onOpenChange(false);
-    setSelectedUser(null);
-    setSearchQuery('');
+  const handleStartDm = async () => {
+    if (!selectedUser) {
+      setError('ユーザーを選択してください');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // DMを作成
+      const newChannel = await createDirectMessage(selectedUser.id);
+      
+      // モーダルを閉じる
+      onOpenChange(false);
+      setSelectedUser(null);
+      setSearchQuery('');
+      
+      // 新しく作成されたDMに遷移
+      router.push(`/workspace/channel/${newChannel.id}`);
+    } catch (error) {
+      console.error('DM作成エラー:', error);
+      setError('DMの作成に失敗しました。もう一度お試しください。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -87,11 +116,13 @@ export default function CreateDirectMessageModal({
               )}
             </div>
           </ScrollArea>
+          
+          {error && <div className="text-sm font-medium text-destructive">{error}</div>}
         </div>
 
         <DialogFooter>
-          <Button onClick={handleStartDm} disabled={!selectedUser}>
-            DMを開始
+          <Button onClick={handleStartDm} disabled={!selectedUser || isLoading}>
+            {isLoading ? '作成中...' : 'DMを開始'}
           </Button>
         </DialogFooter>
       </DialogContent>

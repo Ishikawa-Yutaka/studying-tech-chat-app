@@ -3,7 +3,7 @@
 // React
 import { useState, useEffect } from 'react';
 // Next.js
-import { usePathname } from 'next/navigation';
+import { usePathname, notFound } from 'next/navigation';
 // アイコン
 import { Menu } from 'lucide-react';
 // shadcn/ui
@@ -15,59 +15,43 @@ import AppLogo from '@/components/workspace/appLogo';
 import ChannelList from '@/components/workspace/channelList';
 import DirectMessageList from '@/components/workspace/directMessageList';
 import UserProfileBar from '@/components/workspace/userProfileBar';
+import Loading from '@/app/loading';
+import Error from '@/app/error';
 // 型
 import { ChannelType } from '@/types/workspace';
-// データ
-import { MY_USER_ID, channels } from '@/data/workspace';
+// ストア
+import { useUserStore } from '@/store/useUserStore';
+import { useChannelStore } from '@/store/useChannelStore';
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
-  // 現在のユーザー情報を取得
+  // ユーザーストアから状態とアクションを取得 (isLoading などは、名前が被らないように名前付きで取得)
+  const { user, isLoading: isUserLoading, error: userError, fetchCurrentUser, fetchOtherUsers } = useUserStore();
+  // チャンネルストアから状態とアクションを取得 (同様)
+  const { channels, isLoading: isChannelLoading, error: channelError, fetchChannels } = useChannelStore();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // コンポーネントマウント時にユーザー情報とチャンネル情報を取得
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await fetch('/api/user/me');
-        if (response.ok) {
-          const userData = await response.json();
-          setCurrentUser(userData);
-        } else {
-          console.error('ユーザー情報取得失敗:', response.status);
-        }
-      } catch (error) {
-        console.error('ユーザー情報取得エラー:', error);
-      } finally {
-        setLoading(false);
-      }
+    const initData = async () => {
+      await fetchCurrentUser();
+      await fetchOtherUsers();
+      await fetchChannels();
+      setIsInitialized(true);
     };
 
-    fetchCurrentUser();
-  }, []);
+    initData();
+  }, [fetchCurrentUser, fetchChannels, fetchOtherUsers]);
 
-  const channelsWithMe = channels.filter((channel) => channel.members.some((member) => member.id === MY_USER_ID));
-  const normalChannels = channelsWithMe.filter((channel) => channel.channelType === ChannelType.CHANNEL);
-  const directMessages = channelsWithMe.filter((channel) => channel.channelType === ChannelType.DM);
+  if (!isInitialized || isUserLoading || isChannelLoading) return <Loading />;
+  if (userError || channelError) return <Error />;
+  if (!user) return notFound();
 
-  // ローディング中
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">読み込み中...</div>
-      </div>
-    );
-  }
-
-  // ユーザー情報がない場合
-  if (!currentUser) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">ユーザー情報を取得できませんでした</div>
-      </div>
-    );
-  }
+  // チャンネルの種類で分類
+  const normalChannels = channels.filter((channel) => channel.channelType === ChannelType.CHANNEL);
+  const directMessages = channels.filter((channel) => channel.channelType === ChannelType.DM);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -94,7 +78,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             </div>
             <Separator />
             <div className="p-4">
-              <UserProfileBar user={currentUser} />
+              <UserProfileBar user={user} />
             </div>
           </SheetContent>
         </Sheet>
@@ -114,7 +98,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             <DirectMessageList channels={directMessages} pathname={pathname} />
           </div>
           <div className="sticky bottom-0 border-t bg-background p-4">
-            <UserProfileBar user={currentUser} />
+            <UserProfileBar user={user} />
           </div>
         </aside>
 
