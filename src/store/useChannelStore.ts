@@ -22,7 +22,7 @@ interface ChannelState {
 }
 
 // Zustand を使って ChannelState ストアを作成
-export const useChannelStore = create<ChannelState>((set, get) => ({
+export const useChannelStore = create<ChannelState>((set) => ({
   // 初期 State
   channels: [],
   currentChannel: null,

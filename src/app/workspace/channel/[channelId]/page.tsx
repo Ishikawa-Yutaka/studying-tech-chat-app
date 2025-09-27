@@ -11,7 +11,7 @@ import MessageForm from '@/components/channel/messageForm';
 // データ
 import { getDirectMessagePartner } from '@/lib/db';
 // 型
-import { ChannelType, Message, Channel } from '@/types/workspace';
+import { ChannelType } from '@/types/workspace';
 // Zustand ストア
 import { useMessageStore } from '@/store/useMessageStore';
 import { useChannelStore } from '@/store/useChannelStore';

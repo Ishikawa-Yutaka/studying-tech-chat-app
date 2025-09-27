@@ -37,7 +37,7 @@ export async function signup(formData: FormData) {
     // ユーザーが既に存在する場合
     if (error.message?.includes('user_already_exists') || 
         error.message?.includes('User already registered') ||
-        (error as any).code === 'user_already_exists') {
+        ('code' in error && error.code === 'user_already_exists')) {
       redirect('/signup?error=' + encodeURIComponent('このメールアドレスは既に登録されています。別のメールアドレスをお使いください。'));
     }
     // その他のエラー
@@ -60,10 +60,10 @@ export async function signup(formData: FormData) {
     console.log('データベース保存開始');
     const dbUser = await userOperations.createUser(user.id, data.email, data.options.data.name);
     console.log('データベース保存成功:', dbUser);
-  } catch (dbError: any) {
+  } catch (dbError: unknown) {
     console.error('データベース保存エラー:', dbError);
     // 重複エラー（P2002）の場合はユーザーに適切なメッセージを表示
-    if (dbError.code === 'P2002') {
+    if (dbError && typeof dbError === 'object' && 'code' in dbError && dbError.code === 'P2002') {
       redirect('/signup?error=' + encodeURIComponent('このメールアドレスは既に登録されています。別のメールアドレスをお使いください。'));
     } else {
       // その他のデータベースエラー

@@ -7,11 +7,15 @@ export const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export const SYSTEM_PROMPT =
   'あなたは親切なチャットボットです。簡潔で分かりやすい日本語で回答してください。専門的な質問にも対応できますが、わかりやすく説明するよう心がけてください。';
 
-// OpenAI API を呼び出す - システムプロンプトを追加
-const res = await openai.chat.completions.create({
-  model: 'gpt-4o-mini',
-  messages: [
-    { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: message },
-  ],
-});
+// OpenAI API を呼び出す関数
+export async function createChatCompletion(message: string) {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: message },
+    ],
+  });
+  
+  return response.choices[0]?.message?.content || '';
+}

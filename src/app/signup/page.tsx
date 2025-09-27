@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 // Next.js
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +26,6 @@ const formSchema = z.object({
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   // URL パラメータからエラーメッセージを取得
   useEffect(() => {
