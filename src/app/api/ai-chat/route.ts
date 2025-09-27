@@ -4,6 +4,8 @@ import { aiChatOperations } from '@/lib/db';
 import { openai, SYSTEM_PROMPT } from '@/lib/openai';
 import { User } from '@/types/workspace';
 
+export const dynamic = 'force-dynamic';
+
 export const POST = withAuth(async (request: NextRequest, _, user: User) => {
   try {
     const body = await request.json();

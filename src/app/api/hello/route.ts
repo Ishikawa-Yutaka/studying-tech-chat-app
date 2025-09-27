@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const helloSchema = z.object({
   name: z.string().min(1, '名前は空にできません'),
 });

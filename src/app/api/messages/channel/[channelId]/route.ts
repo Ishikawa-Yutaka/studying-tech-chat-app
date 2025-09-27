@@ -4,6 +4,8 @@ import { channelOperations, messageOperations } from '@/lib/db';
 import { User } from '@/types/workspace';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 // パラメーターの型定義
 type Params = { params: { channelId: string } };
 
@@ -47,7 +49,10 @@ export const GET = withAuth(async (request: NextRequest, { params }: Params, use
 
 // メッセージ送信のバリデーションスキーマ
 const messageSchema = z.object({
-  content: z.string().min(1, { message: 'メッセージ内容は必須です' }).max(1000, { message: 'メッセージは1000文字以下にしてください' }),
+  content: z
+    .string()
+    .min(1, { message: 'メッセージ内容は必須です' })
+    .max(1000, { message: 'メッセージは1000文字以下にしてください' }),
 });
 
 /**
@@ -57,14 +62,20 @@ export const POST = withAuth(async (request: NextRequest, { params }: Params, us
   // パラメーターのバリデーション
   const channelResult = channelIdSchema.safeParse({ channelId: params.channelId });
   if (!channelResult.success) {
-    return NextResponse.json({ error: channelResult.error.format(), message: 'チャンネル ID が無効です' }, { status: 400 });
+    return NextResponse.json(
+      { error: channelResult.error.format(), message: 'チャンネル ID が無効です' },
+      { status: 400 }
+    );
   }
 
   // リクエストボディのバリデーション
   const body = await request.json();
   const messageResult = messageSchema.safeParse(body);
   if (!messageResult.success) {
-    return NextResponse.json({ error: messageResult.error.format(), message: 'メッセージ内容が無効です' }, { status: 400 });
+    return NextResponse.json(
+      { error: messageResult.error.format(), message: 'メッセージ内容が無効です' },
+      { status: 400 }
+    );
   }
 
   const { channelId } = params;
@@ -77,7 +88,8 @@ export const POST = withAuth(async (request: NextRequest, { params }: Params, us
 
     // チャンネルのメンバーに、このユーザーが含まれているか確認
     const isMember = channel.members.some((member) => member.id === user.id);
-    if (!isMember) return NextResponse.json({ error: 'このチャンネルにメッセージを送信する権限がありません' }, { status: 403 });
+    if (!isMember)
+      return NextResponse.json({ error: 'このチャンネルにメッセージを送信する権限がありません' }, { status: 403 });
 
     // メッセージを作成
     const message = await messageOperations.createMessage(channelId, user.id, content);

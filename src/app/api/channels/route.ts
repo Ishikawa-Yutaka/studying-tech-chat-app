@@ -4,6 +4,8 @@ import { channelOperations } from '@/lib/db';
 import { User, ChannelType } from '@/types/workspace';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * [GET] /api/channels: 現在認証されているユーザーが参加しているチャンネルを取得
  */
@@ -21,7 +23,11 @@ export const GET = withAuth(async (request: NextRequest, _, user: User) => {
 
 // チャンネル作成のバリデーションスキーマ
 const createChannelSchema = z.object({
-  name: z.string().min(1, { message: 'チャンネル名は必須です' }).max(50, { message: 'チャンネル名は50文字以下にしてください' }).optional(),
+  name: z
+    .string()
+    .min(1, { message: 'チャンネル名は必須です' })
+    .max(50, { message: 'チャンネル名は50文字以下にしてください' })
+    .optional(),
   description: z.string().max(200, { message: '説明は200文字以下にしてください' }).optional(),
   type: z.enum(['channel', 'dm'], { message: 'チャンネルタイプが無効です' }).default('channel'),
   otherUserId: z.string().optional(), // DM作成時の相手ユーザーID

@@ -3,6 +3,8 @@ import { withAuth } from '@/utils/auth';
 import { messageOperations } from '@/lib/db';
 import { User } from '@/types/workspace';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * [GET] /api/messages/me: 自分のメッセージを取得
  */

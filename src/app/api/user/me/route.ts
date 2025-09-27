@@ -2,10 +2,15 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { userOperations } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const supabase = await createClient();
-    const { data: { user: authUser }, error } = await supabase.auth.getUser();
+    const {
+      data: { user: authUser },
+      error,
+    } = await supabase.auth.getUser();
 
     if (error || !authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

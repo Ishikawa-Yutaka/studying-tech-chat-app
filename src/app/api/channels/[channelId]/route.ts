@@ -4,6 +4,8 @@ import { channelOperations } from '@/lib/db';
 import { User } from '@/types/workspace';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 // パラメーターの型定義
 type Params = { params: { channelId: string } };
 

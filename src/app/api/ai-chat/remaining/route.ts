@@ -3,6 +3,8 @@ import { withAuth } from '@/utils/auth';
 import { User } from '@/types/workspace';
 import { aiChatOperations } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export const GET = withAuth(async (request: NextRequest, _, user: User) => {
   try {
     // 残り使用回数を取得

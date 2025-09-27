@@ -3,6 +3,8 @@ import { userOperations } from '@/lib/db';
 import { withAuth } from '@/utils/auth';
 import { User } from '@/types/workspace';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * [GET] /api/users: 自分以外の全てのユーザーを取得
  */
