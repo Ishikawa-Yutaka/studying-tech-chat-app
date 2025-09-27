@@ -10,7 +10,7 @@ interface MessageState {
   // エラー情報
   error: string | null;
   // 特定チャンネルのメッセージを取得する Action
-  fetchMessages: (channelId: string) => void;
+  fetchMessages: (channelId: string) => Promise<void>;
   // 新しいメッセージを送信する Action
   sendMessage: (channelId: string, content: string) => Promise<void>;
   // 新しいメッセージを追加する Action (楽観的更新用)

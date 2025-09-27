@@ -21,14 +21,11 @@ export async function signup(formData: FormData) {
 
   console.log('サインアップデータ:', { email: data.email, name: data.options.data.name });
 
-  // 開発環境ではメール確認をスキップ
   const { data: authData, error } = await supabase.auth.signUp({
     ...data,
     options: {
       ...data.options,
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/workspace`,
-      // 開発環境では自動確認
-      skipConfirmation: process.env.NODE_ENV === 'development'
     }
   });
 

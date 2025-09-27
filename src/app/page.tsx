@@ -1,5 +1,6 @@
 // Next.js
 import Link from 'next/link';
+import Image from 'next/image';
 // アイコン
 import { ArrowRight } from 'lucide-react';
 // shadcn/ui
@@ -53,7 +54,7 @@ export default function TopPage() {
                 </div>
               </div>
               <div className="flex items-center justify-center">
-                <img
+                <Image
                   alt="STUDYing Tech Chat Dashboard"
                   className="aspect-video overflow-hidden rounded-xl object-cover object-center"
                   src="https://images.unsplash.com/photo-1600267204091-5c1ab8b10c02?q=80&w=1000&auto=format&fit=crop"
