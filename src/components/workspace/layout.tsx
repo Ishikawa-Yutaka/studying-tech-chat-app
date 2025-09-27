@@ -14,40 +14,45 @@ import { Separator } from '@/components/ui/separator';
 import AppLogo from '@/components/workspace/appLogo';
 import ChannelList from '@/components/workspace/channelList';
 import DirectMessageList from '@/components/workspace/directMessageList';
+import AiChatList from '@/components/workspace/aiChatList';
 import UserProfileBar from '@/components/workspace/userProfileBar';
 import Loading from '@/app/loading';
 import Error from '@/app/error';
 // 型
 import { ChannelType } from '@/types/workspace';
-// 削除: データはストアから取得
 // ストア
 import { useUserStore } from '@/store/useUserStore';
+import { useChannelStore } from '@/store/useChannelStore';
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<boolean>(false);
 
-  // ユーザーストアから状態とアクションを取得
-  const { user, isLoading, error, fetchCurrentUser } = useUserStore();
+  // ユーザーストアから状態とアクションを取得 (isLoading などは、名前が被らないように名前付きで取得)
+  const { user, isLoading: isUserLoading, error: userError, fetchCurrentUser, fetchOtherUsers } = useUserStore();
+  // チャンネルストアから状態とアクションを取得 (同様)
+  const { channels, isLoading: isChannelLoading, error: channelError, fetchChannels } = useChannelStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // コンポーネントマウント時にユーザー情報を取得
+  // コンポーネントマウント時にユーザー情報とチャンネル情報を取得
   useEffect(() => {
-    const initUser = async () => {
+    const initData = async () => {
       await fetchCurrentUser();
+      await fetchOtherUsers();
+      await fetchChannels();
       setIsInitialized(true);
     };
 
-    initUser();
-  }, [fetchCurrentUser]);
+    initData();
+  }, [fetchCurrentUser, fetchChannels, fetchOtherUsers]);
 
-  if (!isInitialized || isLoading) return <Loading />;
-  if (error) return <Error />;
+  if (!isInitialized || isUserLoading || isChannelLoading) return <Loading />;
+  if (userError || channelError) return <Error />;
   if (!user) return notFound();
 
-  const channelsWithMe = channels.filter((channel) => channel.members.some((member) => member.id === user.id));
-  const normalChannels = channelsWithMe.filter((channel) => channel.channelType === ChannelType.CHANNEL);
-  const directMessages = channelsWithMe.filter((channel) => channel.channelType === ChannelType.DM);
+  // チャンネルの種類で分類
+  const normalChannels = channels.filter((channel) => channel.channelType === ChannelType.CHANNEL);
+  const directMessages = channels.filter((channel) => channel.channelType === ChannelType.DM);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -70,6 +75,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                 <ChannelList channels={normalChannels} pathname={pathname} />
                 <Separator className="my-2" />
                 <DirectMessageList channels={directMessages} pathname={pathname} />
+                <Separator className="my-2" />
+                <AiChatList pathname={pathname} />
               </div>
             </div>
             <Separator />
@@ -92,6 +99,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             <ChannelList channels={normalChannels} pathname={pathname} />
             <Separator className="my-2" />
             <DirectMessageList channels={directMessages} pathname={pathname} />
+            <Separator className="my-2" />
+            <AiChatList pathname={pathname} />
           </div>
           <div className="sticky bottom-0 border-t bg-background p-4">
             <UserProfileBar user={user} />

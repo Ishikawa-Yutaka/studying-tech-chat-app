@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 // 型
-import { User, ChannelType, Channel, Message } from '@/types/workspace';
+import { User, ChannelType, Channel, Message, AiChatRecord } from '@/types/workspace';
 
 /**
  * ユーザー関連の操作
@@ -77,20 +77,24 @@ export const channelOperations = {
   },
 
   // チャンネルを作成
-  async createChannel(name: string | undefined, description: string | undefined, type: ChannelType, creatorUserId: string, otherUserId?: string): Promise<Channel> {
+  async createChannel(
+    name: string | undefined,
+    description: string | undefined,
+    type: ChannelType,
+    creatorUserId: string,
+    otherUserId?: string
+  ): Promise<Channel> {
     const channel = await prisma.channel.create({
       data: {
         name: type === ChannelType.CHANNEL ? name : null,
         description: type === ChannelType.CHANNEL ? description : null,
         type: type,
         members: {
-          create: type === ChannelType.DM && otherUserId 
-            ? [
-                { userId: creatorUserId },
-                { userId: otherUserId }
-              ]
-            : { userId: creatorUserId }
-        }
+          create:
+            type === ChannelType.DM && otherUserId
+              ? [{ userId: creatorUserId }, { userId: otherUserId }]
+              : { userId: creatorUserId },
+        },
       },
       include: { members: { include: { user: true } } },
     });
@@ -171,5 +175,69 @@ export const messageOperations = {
       sender: { id: message.sender.id, name: message.sender.name },
       channelId: message.channel.id,
     };
+  },
+};
+
+// 1 日の最大使用回数
+export const AI_CHAT_DAILY_USAGE_LIMIT = 3;
+
+/**
+ * AI チャット関連の操作
+ */
+export const aiChatOperations = {
+  // 今日の AI チャット使用回数を確認する
+  async getTodayUsageCount(userId: string): Promise<number> {
+    // 今日の 0 時 0 分 0 秒に設定
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 該当のユーザー ID の、今日以降に作成されたデータを取得
+    return prisma.aiChat.count({
+      where: { userId, createdAt: { gte: today } },
+    });
+  },
+
+  // 残りの使用可能回数を計算する
+  async getRemainingUsage(userId: string): Promise<number> {
+    const usageCount = await this.getTodayUsageCount(userId);
+
+    // 1 日の最大使用回数から現在の使用回数を引いて、残り回数を計算
+    return Math.max(0, AI_CHAT_DAILY_USAGE_LIMIT - usageCount);
+  },
+
+  /**
+   * AI チャットの新しい会話を保存する
+   * @param userId ユーザー ID
+   * @param message ユーザーのメッセージ
+   * @param response AI の応答
+   * @returns 保存されたレコード
+   */
+  async saveConversation(userId: string, message: string, response: string): Promise<AiChatRecord> {
+    return prisma.aiChat.create({ data: { userId, message, response } });
+  },
+
+  /**
+   * ユーザーの会話履歴を取得する
+   * @param userId ユーザーID
+   * @param limit 取得する最大件数 (デフォルト: 50)
+   * @returns 会話履歴
+   */
+  async getConversationHistory(userId: string, limit: number = 50): Promise<AiChatRecord[]> {
+    return prisma.aiChat.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+  },
+
+  /**
+   * 使用制限をチェックする （1 日の使用回数が上限を超えているかどうか）
+   * @param userId ユーザー ID
+   * @returns 制限を超えているかどうか
+   */
+  async isLimitExceeded(userId: string): Promise<boolean> {
+    const usageCount = await this.getTodayUsageCount(userId);
+
+    return usageCount >= AI_CHAT_DAILY_USAGE_LIMIT;
   },
 };

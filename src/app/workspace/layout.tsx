@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import AppLogo from '@/components/workspace/appLogo';
 import ChannelList from '@/components/workspace/channelList';
 import DirectMessageList from '@/components/workspace/directMessageList';
+import AiChatList from '@/components/workspace/aiChatList';
 import UserProfileBar from '@/components/workspace/userProfileBar';
 import Loading from '@/app/loading';
 import Error from '@/app/error';
@@ -74,6 +75,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                 <ChannelList channels={normalChannels} pathname={pathname} />
                 <Separator className="my-2" />
                 <DirectMessageList channels={directMessages} pathname={pathname} />
+                <Separator className="my-2" />
+                <AiChatList pathname={pathname} />
               </div>
             </div>
             <Separator />
@@ -96,6 +99,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             <ChannelList channels={normalChannels} pathname={pathname} />
             <Separator className="my-2" />
             <DirectMessageList channels={directMessages} pathname={pathname} />
+            <Separator className="my-2" />
+            <AiChatList pathname={pathname} />
           </div>
           <div className="sticky bottom-0 border-t bg-background p-4">
             <UserProfileBar user={user} />

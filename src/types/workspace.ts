@@ -34,3 +34,21 @@ export interface Message {
   content: string;
   createdAt: Date;
 }
+
+export enum AiChatRole {
+  USER = 'user',
+  ASSISTANT = 'assistant',
+}
+
+export interface AiChatMessage {
+  role: AiChatRole;
+  content: string;
+}
+
+export interface AiChatRecord {
+  id: string;
+  userId: string;
+  message: string;
+  response: string;
+  createdAt: Date;
+}
